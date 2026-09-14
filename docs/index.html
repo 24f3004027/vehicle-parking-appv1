@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Vehicle Parking Management System</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #070d1a;
+            --card-glass: rgba(15, 23, 42, 0.75);
+            --border-glass: rgba(56, 189, 248, 0.2);
+            --accent-cyan: #38bdf8;
+            --accent-blue: #0284c7;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        #water-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glass-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card-hover:hover {
+            transform: translateY(-8px);
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 25px 50px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #0284c7, #06b6d4);
+            color: #ffffff !important;
+            border: none;
+            font-weight: 700;
+            border-radius: 14px;
+            padding: 12px 28px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
+        }
+        .btn-gradient-primary:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.6);
+        }
+
+        .hero-badge {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .spot-demo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .spot-demo-box {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .spot-a { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; }
+        .spot-o { background: rgba(244, 63, 94, 0.25); border: 1px solid #f43f5e; color: #fb7185; }
+
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-glass);
+            background: rgba(7, 13, 26, 0.8);
+            backdrop-filter: blur(16px);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="water-canvas"></canvas>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top py-3" style="background: rgba(7, 13, 26, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-glass);">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 text-decoration-none" href="#">
+                <div class="p-2 rounded-3 bg-primary bg-opacity-20 text-info d-inline-flex align-items-center justify-content-center">
+                    <i class="fa-solid fa-water fs-4"></i>
+                </div>
+                <span class="fw-extrabold text-white">Park<span class="text-info">Smart</span></span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <a href="https://github.com/24f3004027/vehicle-parking-appv1" target="_blank" class="btn btn-outline-info rounded-pill px-4 btn-sm fw-semibold">
+                    <i class="fa-brands fa-github me-2"></i> GitHub Repository
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-5 text-center my-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-9">
+                    <div class="hero-badge mb-4">
+                        <i class="fa-solid fa-sparkles text-info"></i> Full-Stack Flask & SQLite System
+                    </div>
+                    
+                    <h1 class="display-4 fw-extrabold text-white mb-3" style="letter-spacing: -0.02em;">
+                        Vehicle Parking Management <span class="text-transparent bg-clip-text" style="background: linear-gradient(135deg, #38bdf8, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Redefined</span>
+                    </h1>
+                    
+                    <p class="lead text-secondary mb-4 px-md-5">
+                        A modern, production-ready parking platform featuring role-based portals, interactive spot grid maps, automated duration-based billing, and fluid glassmorphism design.
+                    </p>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+                        <a href="https://github.com/24f3004027/vehicle-parking-appv1" target="_blank" class="btn btn-gradient-primary btn-lg">
+                            <i class="fa-brands fa-github me-2"></i> View Code on GitHub
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg rounded-3 px-4 fw-semibold border-secondary border-opacity-50">
+                            <i class="fa-solid fa-layer-group me-2"></i> Explore Features
+                        </a>
+                    </div>
+
+                    <!-- Badges Row -->
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <span class="badge bg-dark border border-secondary text-info p-2 px-3"><i class="fa-solid fa-scale-balanced me-1"></i> GNU GPLv3</span>
+                        <span class="badge bg-dark border border-secondary text-success p-2 px-3"><i class="fa-brands fa-python me-1"></i> Python 3.9+</span>
+                        <span class="badge bg-dark border border-secondary text-primary p-2 px-3"><i class="fa-solid fa-flask me-1"></i> Flask 3.0</span>
+                        <span class="badge bg-dark border border-secondary text-warning p-2 px-3"><i class="fa-solid fa-database me-1"></i> SQLite / SQLAlchemy</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Spot Grid Demo Section -->
+    <section class="py-4">
+        <div class="container">
+            <div class="glass-card p-4 p-md-5 mb-5 border-info border-opacity-25">
+                <div class="row align-items-center">
+                    <div class="col-12 col-lg-6 mb-4 mb-lg-0">
+                        <span class="text-info fw-bold small text-uppercase mb-2 d-block"><i class="fa-solid fa-grid-2 me-1"></i> Real-time Visualization</span>
+                        <h3 class="fw-bold text-white mb-3">Interactive Parking Spot Map</h3>
+                        <p class="text-secondary mb-4">
+                            Drivers and administrators view live availability maps. Green slots indicate available spots ready for booking, while Red slots display active vehicle details with tooltips.
+                        </p>
+                        <div class="d-flex gap-3">
+                            <span class="badge bg-success bg-opacity-20 text-success border border-success p-2 px-3">
+                                <i class="fa-solid fa-circle me-1"></i> Available
+                            </span>
+                            <span class="badge bg-danger bg-opacity-20 text-danger border border-danger p-2 px-3">
+                                <i class="fa-solid fa-circle me-1"></i> Occupied
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="bg-dark bg-opacity-60 p-4 rounded-4 border border-secondary border-opacity-25">
+                            <div class="d-flex justify-content-between mb-3 text-secondary small">
+                                <span>IIT Madras Academic Complex (P1)</span>
+                                <span class="text-info fw-bold">₹30.00 / hr</span>
+                            </div>
+                            <div class="spot-demo-grid">
+                                <div class="spot-demo-box spot-a">P1-01</div>
+                                <div class="spot-demo-box spot-o">P1-02</div>
+                                <div class="spot-demo-box spot-a">P1-03</div>
+                                <div class="spot-demo-box spot-a">P1-04</div>
+                                <div class="spot-demo-box spot-o">P1-05</div>
+                                <div class="spot-demo-box spot-a">P1-06</div>
+                                <div class="spot-demo-box spot-a">P1-07</div>
+                                <div class="spot-demo-box spot-o">P1-08</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-extrabold text-white mb-2">Key Application Modules</h2>
+                <p class="text-secondary small">Engineered for seamless administration and driver self-service</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 glass-card-hover">
+                        <div class="feature-icon-box bg-primary bg-opacity-20 text-info">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-2">Role-Based Access</h4>
+                        <p class="text-secondary small mb-0">
+                            Separate Admin and Driver portals protected by Werkzeug password hashing and Flask session authentication.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 glass-card-hover">
+                        <div class="feature-icon-box bg-success bg-opacity-20 text-success">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-2">Automated Billing Engine</h4>
+                        <p class="text-secondary small mb-0">
+                            Dynamic parking duration computation, minimum tariff enforcement, and printable checkout invoice receipts.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 glass-card-hover">
+                        <div class="feature-icon-box bg-warning bg-opacity-20 text-warning">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-2">Analytics & Occupancy</h4>
+                        <p class="text-secondary small mb-0">
+                            Chart.js visual occupancy breakdown per parking lot, total revenue statistics, and live vehicle monitoring.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quickstart & Demo Credentials Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-8">
+                    <div class="glass-card p-4 p-md-5">
+                        <h3 class="fw-bold text-white mb-3 text-center"><i class="fa-solid fa-terminal text-info me-2"></i>Quick Local Setup</h3>
+                        
+                        <div class="bg-dark bg-opacity-80 p-3 rounded-3 mb-4 font-monospace text-info small border border-secondary border-opacity-25">
+                            <div><span class="text-secondary"># 1. Clone repository</span></div>
+                            <div>git clone git@github.com:24f3004027/vehicle-parking-appv1.git</div>
+                            <div class="mt-2"><span class="text-secondary"># 2. Run application</span></div>
+                            <div>python3 -m venv venv && ./venv/bin/pip install -r requirements.txt</div>
+                            <div>./venv/bin/python app.py</div>
+                        </div>
+
+                        <div class="bg-body bg-opacity-40 p-3 rounded-3 border border-secondary border-opacity-25">
+                            <h6 class="fw-bold text-white mb-2"><i class="fa-solid fa-key text-warning me-2"></i>Seeded Demo Credentials</h6>
+                            <div class="d-flex justify-content-between text-secondary small">
+                                <span><b>Admin Portal:</b> <code>admin</code> / <code>admin123</code></span>
+                                <span><b>Driver Portal:</b> <code>ramrup</code> / <code>user123</code></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center text-secondary small">
+        <div class="container">
+            <p class="mb-1">
+                𯅅 Copyleft Ramrup Satpati (24f3004027) | IIT Madras | Released under GNU GPLv3 License
+            </p>
+            <p class="mb-0 text-muted">All rights reversed &bull; Vehicle Parking Management System</p>
+        </div>
+    </footer>
+
+    <!-- Water Canvas Background Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const canvas = document.getElementById("water-canvas");
+            const ctx = canvas.getContext("2d");
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                initParticles();
+            }
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.8;
+                    this.vy = (Math.random() - 0.5) * 0.8;
+                    this.radius = Math.random() * 3 + 1.5;
+                    this.alpha = Math.random() * 0.3 + 0.15;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(56, 189, 248, ${this.alpha})`;
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                const count = Math.floor((width * height) / 14000);
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function drawMesh() {
+                const maxDist = 130;
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < maxDist) {
+                            let alpha = (1 - dist / maxDist) * 0.2;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                let grad = ctx.createRadialGradient(width / 2, height / 2, 100, width / 2, height / 2, Math.max(width, height));
+                grad.addColorStop(0, 'rgba(11, 24, 46, 0.4)');
+                grad.addColorStop(1, 'rgba(7, 13, 26, 0.9)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                drawMesh();
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener("resize", resize);
+            resize();
+            animate();
+        });
+    </script>
+</body>
+</html>
