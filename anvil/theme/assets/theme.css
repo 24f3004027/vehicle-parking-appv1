@@ -1,0 +1,36 @@
+/* ParkSmart Anvil Glassmorphism CSS Theme */
+:root {
+    --bg-dark: #070d1a;
+    --card-glass: rgba(15, 23, 42, 0.75);
+    --border-glass: rgba(56, 189, 248, 0.2);
+    --accent-cyan: #38bdf8;
+    --accent-blue: #0284c7;
+    --text-white: #f8fafc;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-white);
+    margin: 0;
+    padding: 0;
+}
+
+.anvil-panel-glass {
+    background: var(--card-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.anvil-btn-gradient {
+    background: linear-gradient(135deg, #0284c7, #06b6d4);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
+    cursor: pointer;
+}

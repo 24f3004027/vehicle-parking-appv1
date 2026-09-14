@@ -1,0 +1,42 @@
+app_id: parksmart_vehicle_app_v1
+name: ParkSmart Vehicle Parking App
+package_name: ParkSmartApp
+startup: {type: form, name: MainForm}
+allow_embedding: true
+db_schema:
+  users:
+    title: users
+    client: search
+    columns:
+    - {name: username, type: string}
+    - {name: email, type: string}
+    - {name: password_hash, type: string}
+    - {name: role, type: string}
+  parking_lots:
+    title: parking_lots
+    client: search
+    columns:
+    - {name: name, type: string}
+    - {name: address, type: string}
+    - {name: pin_code, type: string}
+    - {name: total_spots, type: number}
+    - {name: price_per_hour, type: number}
+  parking_spots:
+    title: parking_spots
+    client: search
+    columns:
+    - {name: lot_id, type: number}
+    - {name: spot_number, type: string}
+    - {name: status, type: string}
+  reservations:
+    title: reservations
+    client: search
+    columns:
+    - {name: spot_id, type: number}
+    - {name: user_id, type: number}
+    - {name: vehicle_number, type: string}
+    - {name: vehicle_type, type: string}
+    - {name: parking_timestamp, type: date}
+    - {name: leaving_timestamp, type: date}
+    - {name: parking_cost, type: number}
+    - {name: status, type: string}
