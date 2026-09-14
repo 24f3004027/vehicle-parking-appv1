@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Find Parking - ParkSmart Fluid{% endblock %}
+
+{% block content %}
+<!-- Active Parking Session Card (if any) -->
+{% if active_reservation %}
+<div class="glass-card p-4 border-info border-opacity-50 mb-4 position-relative overflow-hidden glass-card-hover">
+    <div class="position-absolute top-0 end-0 p-3 opacity-10 text-info">
+        <i class="fa-solid fa-car fs-1" style="font-size: 8rem !important;"></i>
+    </div>
+    <div class="row align-items-center position-relative z-1">
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-success bg-opacity-20 text-success border border-success px-3 py-1 rounded-pill">
+                    <i class="fa-solid fa-signal me-1"></i> ACTIVE PARKING PASS
+                </span>
+                <span class="text-muted small">Session #{{ active_reservation.id }}</span>
+            </div>
+            <h3 class="fw-bold text-main mb-1">{{ active_reservation.spot.lot.name }}</h3>
+            <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-danger me-1"></i> {{ active_reservation.spot.lot.address }}</p>
+            
+            <div class="d-flex flex-wrap gap-3 mt-3">
+                <div class="bg-body bg-opacity-60 px-3 py-2 rounded-3 border border-secondary border-opacity-25">
+                    <span class="text-muted small d-block">Spot Number</span>
+                    <span class="fw-bold text-info fs-5">{{ active_reservation.spot.spot_number }}</span>
+                </div>
+                <div class="bg-body bg-opacity-60 px-3 py-2 rounded-3 border border-secondary border-opacity-25">
+                    <span class="text-muted small d-block">Vehicle Number</span>
+                    <span class="fw-bold text-warning fs-5">{{ active_reservation.vehicle_number }}</span>
+                </div>
+                <div class="bg-body bg-opacity-60 px-3 py-2 rounded-3 border border-secondary border-opacity-25">
+                    <span class="text-muted small d-block">Parked Since</span>
+                    <span class="fw-semibold text-main fs-6">{{ active_reservation.parking_timestamp.strftime('%H:%M (%d %b)') }}</span>
+                </div>
+                <div class="bg-body bg-opacity-60 px-3 py-2 rounded-3 border border-secondary border-opacity-25">
+                    <span class="text-muted small d-block">Hourly Rate</span>
+                    <span class="fw-semibold text-success fs-6">₹{{ active_reservation.spot.lot.price_per_hour }}/hr</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 text-md-end">
+            <form method="POST" action="{{ url_for('checkout_vehicle', reservation_id=active_reservation.id) }}" onsubmit="return confirm('Confirm check-out and generate receipt?');">
+                <button type="submit" class="btn btn-gradient-primary water-ripple btn-lg w-100 py-3 fw-bold">
+                    <i class="fa-solid fa-right-from-bracket me-2"></i> Check Out & Pay
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Header & Search -->
+<div class="row align-items-center mb-4">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <h2 class="fw-extrabold mb-1"><i class="fa-solid fa-magnifying-glass-location text-info me-2"></i>Find Parking Lots</h2>
+        <p class="text-muted small mb-0">Search nearby verified parking locations and check live spot availability</p>
+    </div>
+    <div class="col-12 col-md-6">
+        <form method="GET" action="{{ url_for('user_dashboard') }}">
+            <div class="input-group glass-card p-1">
+                <input type="text" name="q" value="{{ search_query }}" class="form-control bg-transparent text-main border-0 px-3" placeholder="Search by name, location, or PIN code...">
+                <button class="btn btn-gradient-primary water-ripple rounded-3 px-4" type="submit">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Parking Lots Cards Grid -->
+<div class="row g-4 mb-4">
+    {% if lots %}
+        {% for lot in lots %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="glass-card p-4 h-100 d-flex flex-column glass-card-hover">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1 text-main">{{ lot.name }}</h5>
+                        <span class="text-muted small"><i class="fa-solid fa-location-dot text-danger me-1"></i>{{ lot.address }}</span>
+                    </div>
+                    <span class="badge bg-body text-info border border-info px-2 py-1">
+                        PIN {{ lot.pin_code }}
+                    </span>
+                </div>
+
+                <div class="bg-body bg-opacity-50 p-3 rounded-3 my-3 border border-secondary border-opacity-25">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Spot Availability:</span>
+                        {% if lot.available_spots_count > 0 %}
+                            <span class="badge bg-success bg-opacity-20 text-success border border-success">
+                                <i class="fa-solid fa-circle-check me-1"></i> {{ lot.available_spots_count }} / {{ lot.total_spots }} Available
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-20 text-danger border border-danger">
+                                <i class="fa-solid fa-circle-xmark me-1"></i> FULL (0 Spots)
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Parking Tariff:</span>
+                        <span class="fw-bold text-main">₹{{ "%.2f"|format(lot.price_per_hour) }} <span class="text-muted small fw-normal">/ hour</span></span>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-2">
+                    {% if lot.available_spots_count > 0 %}
+                        {% if active_reservation %}
+                            <button class="btn btn-outline-secondary w-100 rounded-3" disabled title="Check out existing parking first">
+                                Active Pass Exists
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('park_vehicle', lot_id=lot.id) }}" class="btn btn-gradient-primary water-ripple w-100 fw-semibold rounded-3">
+                                <i class="fa-solid fa-square-parking me-1"></i> Park Vehicle Here
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-outline-secondary w-100 rounded-3" disabled>No Spots Available</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="glass-card p-5 text-center text-muted">
+                <i class="fa-solid fa-triangle-exclamation fs-1 text-warning mb-3"></i>
+                <h5 class="text-main">No Parking Lots Found</h5>
+                <p class="small mb-0">No locations matched your search query "{{ search_query }}". Try searching for another keyword.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ParkSmart - Watery Fluid Vehicle Parking{% endblock %}</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root[data-bs-theme="dark"] {
+            --bg-body: #070d1a;
+            --card-glass: rgba(15, 23, 42, 0.75);
+            --border-glass: rgba(56, 189, 248, 0.15);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --navbar-bg: rgba(7, 13, 26, 0.85);
+            --spot-available-bg: rgba(16, 185, 129, 0.15);
+            --spot-available-border: rgba(16, 185, 129, 0.4);
+            --spot-available-color: #34d399;
+            --spot-occupied-bg: rgba(244, 63, 94, 0.2);
+            --spot-occupied-border: rgba(244, 63, 94, 0.5);
+            --spot-occupied-color: #fb7185;
+            --table-hover-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        :root[data-bs-theme="light"] {
+            --bg-body: #f0f9ff;
+            --card-glass: rgba(255, 255, 255, 0.85);
+            --border-glass: rgba(2, 132, 199, 0.2);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --accent-blue: #0284c7;
+            --accent-cyan: #0891b2;
+            --accent-emerald: #059669;
+            --accent-rose: #e11d48;
+            --navbar-bg: rgba(255, 255, 255, 0.9);
+            --spot-available-bg: rgba(16, 185, 129, 0.2);
+            --spot-available-border: rgba(16, 185, 129, 0.6);
+            --spot-available-color: #047857;
+            --spot-occupied-bg: rgba(244, 63, 94, 0.25);
+            --spot-occupied-border: rgba(244, 63, 94, 0.6);
+            --spot-occupied-color: #be123c;
+            --table-hover-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            overflow-x: hidden;
+        }
+
+        .navbar-glass {
+            background: var(--navbar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            transition: all 0.4s ease;
+        }
+
+        .glass-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card-hover:hover {
+            transform: translateY(-5px);
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 20px 45px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #0284c7, #06b6d4);
+            color: #ffffff !important;
+            border: none;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 10px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        }
+        .btn-gradient-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5);
+        }
+
+        /* Water Ripple Effect */
+        .water-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .water-ripple::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        .water-ripple:focus:not(:active)::after,
+        .water-ripple:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+        @keyframes ripple {
+            0% { transform: scale(0, 0); opacity: 0.5; }
+            100% { transform: scale(40, 40); opacity: 0; }
+        }
+
+        /* Spot Grid Layout & Halos */
+        .spot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 14px;
+        }
+
+        .spot-box {
+            aspect-ratio: 1;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .spot-available {
+            background: var(--spot-available-bg);
+            border: 1.5px solid var(--spot-available-border);
+            color: var(--spot-available-color);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+        .spot-available:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .spot-occupied {
+            background: var(--spot-occupied-bg);
+            border: 1.5px solid var(--spot-occupied-border);
+            color: var(--spot-occupied-color);
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.15);
+        }
+        .spot-occupied:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
+        }
+
+        .badge-role {
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-admin {
+            background: rgba(244, 63, 94, 0.2);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.4);
+        }
+
+        .badge-user {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .theme-toggle-btn {
+            background: var(--card-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle-btn:hover {
+            transform: rotate(20deg) scale(1.1);
+            border-color: var(--accent-blue);
+        }
+
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-glass);
+            background: var(--navbar-bg);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top py-3 navbar-glass">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 text-decoration-none" href="{{ url_for('index') }}">
+                <div class="p-2 rounded-3 bg-primary bg-opacity-20 text-primary d-inline-flex align-items-center justify-content-center">
+                    <i class="fa-solid fa-water fs-4 text-info"></i>
+                </div>
+                <span class="fw-extrabold text-main">Park<span class="text-info">Smart</span></span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-2 ms-auto me-2 me-lg-0 order-lg-last">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Theme">
+                    <i class="fa-solid fa-moon text-info fs-5" id="themeIcon"></i>
+                </button>
+            </div>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-2 mt-3 mt-lg-0">
+                    {% if current_user %}
+                        {% if current_user.role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-line me-1 text-primary"></i> Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="{{ url_for('create_lot') }}"><i class="fa-solid fa-circle-plus me-1 text-info"></i> Add Lot</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="{{ url_for('admin_occupancy') }}"><i class="fa-solid fa-car me-1 text-danger"></i> Live Occupancy</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="{{ url_for('user_dashboard') }}"><i class="fa-solid fa-compass me-1 text-info"></i> Find Parking</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="{{ url_for('user_history') }}"><i class="fa-solid fa-receipt me-1 text-primary"></i> History</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="nav-item ms-lg-3 d-flex align-items-center gap-2">
+                            <span class="fw-semibold"><i class="fa-solid fa-user me-1 text-info"></i> {{ current_user.username }}</span>
+                            <span class="badge-role {% if current_user.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                                {{ current_user.role }}
+                            </span>
+                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm rounded-circle p-2 ms-1 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" title="Logout">
+                                <i class="fa-solid fa-right-from-bracket fs-6"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-gradient-primary water-ripple btn-sm rounded-pill px-4 ms-lg-2" href="{{ url_for('register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container my-4 flex-grow-1">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show glass-card border-0 mb-4 shadow-sm" role="alert">
+                                <i class="fa-solid {% if category=='success' %}fa-circle-check text-success{% elif category=='danger' %}fa-circle-xmark text-danger{% else %}fa-circle-info text-info{% endif %} me-2 fs-5"></i>
+                                <span>{{ message }}</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center small">
+        <div class="container">
+            <p class="mb-1 fw-medium">
+                𯅅 Copyleft Ramrup Satpati (24f3004027) | IIT Madras | Released under GNU GPLv3 License
+            </p>
+            <p class="mb-0 text-muted">All rights reversed &bull; ParkSmart Watery Fluid Edition v2.0</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Water Canvas Background Script -->
+    <script src="{{ url_for('static', filename='js/canvas-bg.js') }}"></script>
+
+    <script>
+        // Light / Dark Theme Switcher Logic
+        const themeToggle = document.getElementById("themeToggle");
+        const themeIcon = document.getElementById("themeIcon");
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute("data-bs-theme", theme);
+            localStorage.setItem("theme", theme);
+            if (theme === "dark") {
+                themeIcon.className = "fa-solid fa-moon text-info fs-5";
+            } else {
+                themeIcon.className = "fa-solid fa-sun text-warning fs-5";
+            }
+        }
+
+        const savedTheme = localStorage.getItem("theme") || "dark";
+        setTheme(savedTheme);
+
+        themeToggle.addEventListener("click", function () {
+            const currentTheme = document.documentElement.getAttribute("data-bs-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            setTheme(newTheme);
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

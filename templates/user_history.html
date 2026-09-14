@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}My Parking History - ParkSmart Fluid{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-extrabold mb-1 text-main"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i>My Parking History</h3>
+        <p class="text-muted small mb-0">Record of your current and previous parking sessions</p>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    {% if reservations %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr class="text-muted border-secondary border-opacity-25">
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Spot</th>
+                        <th>Vehicle Plate</th>
+                        <th>Parked Time</th>
+                        <th>Exit Time</th>
+                        <th>Total Cost</th>
+                        <th class="text-end">Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in reservations %}
+                    <tr class="border-secondary border-opacity-10">
+                        <td>
+                            {% if res.status == 'ACTIVE' %}
+                                <span class="badge bg-success bg-opacity-20 text-success border border-success rounded-pill">ACTIVE</span>
+                            {% else %}
+                                <span class="badge bg-body border border-secondary text-muted rounded-pill">COMPLETED</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold text-main"><i class="fa-solid fa-location-dot text-danger me-2"></i>{{ res.spot.lot.name }}</td>
+                        <td><span class="badge bg-body border border-secondary text-info">{{ res.spot.spot_number }}</span></td>
+                        <td><span class="fw-bold text-warning">{{ res.vehicle_number }}</span></td>
+                        <td class="text-muted small">{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-muted small">
+                            {% if res.leaving_timestamp %}
+                                {{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                <i>Currently Parked</i>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold {% if res.status == 'COMPLETED' %}text-success{% else %}text-muted{% endif %}">
+                            {% if res.parking_cost %}
+                                ₹{{ "%.2f"|format(res.parking_cost) }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if res.status == 'COMPLETED' %}
+                                <a href="{{ url_for('receipt', reservation_id=res.id) }}" class="btn btn-outline-info btn-sm rounded-3">
+                                    <i class="fa-solid fa-receipt me-1"></i> Receipt
+                                </a>
+                            {% else %}
+                                <form method="POST" action="{{ url_for('checkout_vehicle', reservation_id=res.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-warning btn-sm rounded-3">
+                                        <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fa-solid fa-receipt fs-1 text-muted mb-3"></i>
+            <h5 class="text-main">No Parking History Found</h5>
+            <p class="small mb-0">You haven't made any parking reservations yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Login - ParkSmart Fluid{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-75 py-5">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="glass-card p-4 p-md-5 glass-card-hover">
+            <div class="text-center mb-4">
+                <div class="bg-primary bg-opacity-20 d-inline-flex p-3 rounded-circle text-info mb-3 border border-info border-opacity-25 shadow-sm">
+                    <i class="fa-solid fa-water-waves fs-1 text-info"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Welcome Back</h3>
+                <p class="text-muted small">Log in to manage or reserve fluid parking spots</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-body border-secondary border-opacity-25 text-muted"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" name="username" class="form-control bg-body border-secondary border-opacity-25 text-main" placeholder="Enter username" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-body border-secondary border-opacity-25 text-muted"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" name="password" class="form-control bg-body border-secondary border-opacity-25 text-main" placeholder="Enter password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-gradient-primary water-ripple w-100 py-3 mb-3 fw-bold">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i> Log In
+                </button>
+            </form>
+
+            <div class="text-center text-muted small mt-3">
+                Don't have an account? <a href="{{ url_for('register') }}" class="text-info text-decoration-none fw-semibold">Register here</a>
+            </div>
+            
+            <hr class="border-secondary border-opacity-25 my-4">
+            
+            <div class="bg-body bg-opacity-50 p-3 rounded-3 small border border-secondary border-opacity-25">
+                <span class="fw-semibold text-info"><i class="fa-solid fa-key me-1"></i> Demo Credentials:</span>
+                <div class="d-flex justify-content-between mt-2 text-muted">
+                    <span>Admin: <code>admin</code> / <code>admin123</code></span>
+                    <span>User: <code>ramrup</code> / <code>user123</code></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

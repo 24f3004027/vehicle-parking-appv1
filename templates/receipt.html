@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Parking Receipt #{{ reservation.id }} - ParkSmart Fluid{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="glass-card p-4 p-md-5 border-success border-opacity-50 glass-card-hover">
+            <!-- Receipt Header -->
+            <div class="text-center mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+                <div class="bg-success bg-opacity-20 d-inline-flex p-3 rounded-circle text-success mb-3">
+                    <i class="fa-solid fa-receipt fs-1"></i>
+                </div>
+                <h3 class="fw-bold mb-1 text-main">Parking Invoice Receipt</h3>
+                <span class="badge bg-success bg-opacity-20 text-success border border-success px-3 py-1 rounded-pill">PAYMENT SUCCESSFUL</span>
+                <p class="text-muted small mt-2 mb-0">Receipt ID: #PS-{{ reservation.id }}-2026</p>
+            </div>
+
+            <!-- Invoice Details Table -->
+            <div class="bg-body bg-opacity-50 p-4 rounded-3 mb-4 border border-secondary border-opacity-25">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Parking Location</span>
+                    <span class="fw-bold text-main">{{ reservation.spot.lot.name }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Assigned Spot</span>
+                    <span class="fw-bold text-info">{{ reservation.spot.spot_number }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Vehicle Number</span>
+                    <span class="badge bg-body border border-secondary text-warning px-3 py-1">{{ reservation.vehicle_number }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Vehicle Type</span>
+                    <span class="fw-semibold text-main">{{ reservation.vehicle_type }}</span>
+                </div>
+                
+                <hr class="border-secondary border-opacity-25 my-3">
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Entry Time</span>
+                    <span class="text-main">{{ reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Exit Time</span>
+                    <span class="text-main">
+                        {% if reservation.leaving_timestamp %}
+                            {{ reservation.leaving_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total Billed Duration</span>
+                    <span class="fw-semibold text-info">{{ reservation.duration_hours }} hr(s)</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Hourly Tariff Rate</span>
+                    <span class="text-main">₹{{ "%.2f"|format(reservation.spot.lot.price_per_hour) }} / hr</span>
+                </div>
+
+                <hr class="border-secondary border-opacity-25 my-3">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-main fs-5">Total Paid</span>
+                    <span class="fw-bold text-success fs-3">₹{{ "%.2f"|format(reservation.parking_cost or 0.0) }}</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-outline-secondary w-50 rounded-3">
+                    <i class="fa-solid fa-print me-1"></i> Print Receipt
+                </button>
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-gradient-primary water-ripple w-50 rounded-3">
+                    <i class="fa-solid fa-house me-1"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

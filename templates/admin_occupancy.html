@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Live Occupancy - ParkSmart Fluid{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-extrabold mb-1 text-main"><i class="fa-solid fa-car text-danger me-2"></i>Live Occupancy Monitor</h3>
+        <p class="text-muted small mb-0">Real-time track of all active parked vehicles across all locations</p>
+    </div>
+    <span class="badge bg-danger bg-opacity-20 text-danger border border-danger p-2 px-3 fs-6 rounded-pill">
+        <i class="fa-solid fa-signal me-1"></i> {{ active_parkings|length }} Active Vehicles Parked
+    </span>
+</div>
+
+<div class="glass-card p-4">
+    {% if active_parkings %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr class="text-muted border-secondary border-opacity-25">
+                        <th>Location</th>
+                        <th>Spot</th>
+                        <th>Vehicle Plate</th>
+                        <th>Type</th>
+                        <th>Driver Username</th>
+                        <th>Parked Since</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in active_parkings %}
+                    <tr class="border-secondary border-opacity-10">
+                        <td class="fw-bold text-main"><i class="fa-solid fa-location-dot text-danger me-2"></i>{{ res.spot.lot.name }}</td>
+                        <td><span class="badge bg-body border border-secondary text-info">{{ res.spot.spot_number }}</span></td>
+                        <td><span class="badge bg-body border border-secondary px-3 py-2 text-warning fw-bold">{{ res.vehicle_number }}</span></td>
+                        <td><span class="badge bg-info bg-opacity-20 text-info">{{ res.vehicle_type }}</span></td>
+                        <td class="text-main"><i class="fa-solid fa-user me-1 text-muted"></i>{{ res.user.username }}</td>
+                        <td class="text-muted small">{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td class="text-end">
+                            <form method="POST" action="{{ url_for('checkout_vehicle', reservation_id=res.id) }}" class="d-inline" onsubmit="return confirm('Force checkout vehicle {{ res.vehicle_number }}?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-3">
+                                    <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fa-solid fa-square-check fs-1 text-success mb-3"></i>
+            <h5 class="text-main">No Active Parkings</h5>
+            <p class="small mb-0">All parking spots across all locations are currently empty.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
